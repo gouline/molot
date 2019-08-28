@@ -22,6 +22,7 @@ setup(
     version=__version__,
     description="Molot - lightweight build tool for software projects.",
     long_description=readme,
+    long_description_content_type='text/x-rst',
     url='https://github.com/traversals/molot',
     license='MIT License',
     packages=find_packages(exclude=['tests']),
@@ -34,11 +35,11 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-        "Programming Language :: Python"
-        "Programming Language :: Python :: 3 :: Only"
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Software Development :: Libraries :: Python Modules'
     ],
 )
