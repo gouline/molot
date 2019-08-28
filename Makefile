@@ -1,4 +1,4 @@
-.PHONY: all build check clean
+.PHONY: all build check clean dev-requirements
 
 all: build
 
@@ -13,3 +13,6 @@ upload: check
 
 clean:
 	rm -rf build dist
+
+dev-requirements:
+	pip3 install -r dev-requirements.txt
