@@ -1,0 +1,5 @@
+Environments:
+  dev:
+    Name: development
+  prod:
+    Name: production
