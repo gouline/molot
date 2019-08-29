@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+__import__('sys').path.append('../../') # remove to work with pip package
+
 from molot import * #pylint: disable=unused-wildcard-import
 
 ENV = envarg('ENV', default='dev', description="build environment")

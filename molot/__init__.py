@@ -44,21 +44,23 @@ _STATE = _State()
 #region Targets
 
 class _TargetDef:
-    def __init__(self, name: str, description: str, group: str, depends: list, f):
+    def __init__(self, name: str, description: str, group: str, phony: bool, depends: list, f):
         self.name = name
         self.description = description
         self.group = group
         self.depends = depends
+        self.phony = phony
         self.f = f
 
-def target(name: str = "", description: str = "", group: str = "<ungrouped>", depends: list = []) -> types.FunctionType:
+def target(name: str = "", description: str = "", group: str = "<ungrouped>", depends: list = [], phony: bool = False) -> types.FunctionType:
     """Decorator for executable targets.
     
     Keyword Arguments:
         name {str} -- Unique name. (default: {""})
         description {str} -- Human-readable description. (default: {""})
-        group
+        group {str} -- Name for grouping when being listed. (default: {""})
         depends {list} -- List of targets it depends on. (default: {[]})
+        phony {bool} -- Determines whether target is a phony and doesn't use environment. (default: {False})
     
     Returns:
         types.FunctionType -- Decorator function.
@@ -74,12 +76,13 @@ def target(name: str = "", description: str = "", group: str = "<ungrouped>", de
             description=description if description else "<no description>",
             group=group,
             depends=depends,
+            phony=phony,
             f=f
         )
         return wrapper
     return decorator
 
-@target(name='list', description="lists all available targets", group="<builtin>")
+@target(name='list', description="lists all available targets", group="<builtin>", phony=True)
 def _list_targets():
     print("Available targets:")
 
@@ -104,10 +107,15 @@ def _list_targets():
 #region Environment arguments
 
 class _EnvArgDef:
-    def __init__(self, name: str, description: str, default):
+    def __init__(self, name: str, description: str, default: str):
         self.name = name
         self.description = description
         self.default = default
+
+def _envargval(name: str, default: str) -> str:
+    if name in _STATE.envargvals:
+        return _STATE.envargvals[name]
+    return os.getenv(name, default)
 
 def envarg(name: str, default: str = None, description: str = "") -> str:
     """Decorator for environment argument.
@@ -128,9 +136,7 @@ def envarg(name: str, default: str = None, description: str = "") -> str:
         description=description if description else "<no description>",
         default=default
     )
-    if name in _STATE.envargvals:
-        return _STATE.envargvals[name]
-    return os.getenv(name, default)
+    return _envargval(name, default)
 
 #endregion
 
@@ -238,9 +244,18 @@ def build():
         evaluated[name] = True
         to_evaluate.pop()
 
+    env_listed = False
     while len(to_execute) > 0:
         target = to_execute.pop()
-        print("Running target:", target.name)
+
+        if not env_listed and not target.phony:
+            print("Environment:")
+            for key, var in _STATE.envargs.items():
+                print(f"  {key}={_envargval(key, var.default)}")
+            print()
+            env_listed = True
+
+        print("→ Executing target:", target.name)
         target.f()
 
 def shell(command: str, piped: bool = False, silent: bool = False) -> str:
