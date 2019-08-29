@@ -157,7 +157,7 @@ def load_config(path: str) -> Any:
         print(f"Config {path} not found")
     return config
 
-def config(keys: list = [], required: bool = False, path: str = os.path.join(PROJECT_PATH, 'build.yaml')) -> Any:
+def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJECT_PATH, 'build.yaml')) -> Any:
     """Loads configuration from file or returns previously loaded one.
 
     Loading from file will be done on the first call. Subsequent loads from different file
@@ -168,7 +168,7 @@ def config(keys: list = [], required: bool = False, path: str = os.path.join(PRO
         keys {list} -- List of recursive keys to retrieve.
 
     Keyword Arguments:
-        required {bool} -- Throws fatal error if not found, when set to True (default: {False})
+        required {bool} -- Throws fatal error if not found, when set to True (default: {True})
         path {str} -- Path to configuration file. (default: {PROJECT_PATH/build.yaml})
     
     Returns:
