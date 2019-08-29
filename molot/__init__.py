@@ -8,9 +8,10 @@ import argparse
 import collections
 import subprocess
 import types
+import io
 from typing import Any
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -82,10 +83,10 @@ def target(name: str = "", description: str = "", group: str = "<ungrouped>", de
         return wrapper
     return decorator
 
-@target(name='list', description="lists all available targets", group="<builtin>", phony=True)
-def _list_targets():
-    print("Available targets:")
+def _list_targets_str() -> str:
+    out = io.StringIO()
 
+    print("available targets:", file=out)
     targets = list(_STATE.targets.values())
     targets.sort(key=lambda x: (x.group.lower(), x.name.lower()))
     targets_group = None
@@ -93,14 +94,20 @@ def _list_targets():
         depends = "(depends: {})".format(', '.join(target.depends)) if target.depends else ''
         if targets_group != target.group:
             targets_group = target.group
-            print(f"  {target.group}")
+            print(f"  {target.group}", file=out)
             
-        print(f"    {target.name} - {target.description} {depends}")
+        print(f"    {target.name} - {target.description} {depends}", file=out)
 
-    print("\nEnvironment arguments:")
+    print("\nenvironment arguments:", file=out)
     for aname in _STATE.envargs:
         envarg = _STATE.envargs[aname]
-        print(f"  {envarg.name} - {envarg.description} (default: {envarg.default})")
+        print(f"  {envarg.name} - {envarg.description} (default: {envarg.default})", file=out)
+    
+    return out.getvalue()
+
+@target(name='list', description="lists all available targets", group="<builtin>", phony=True)
+def _list_targets():
+    print(_list_targets_str(), end='')
 
 #endregion
 
@@ -203,9 +210,13 @@ def build():
     """Executes build. Call to build() must be at the end of build.py!
     """
 
-    parser = argparse.ArgumentParser(description='Project build script.')
-    parser.add_argument('targets', metavar='TARGET', type=str, nargs='+',
-                    help="build target to execute")
+    parser = argparse.ArgumentParser(
+        description='Project build script.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=_list_targets_str()
+    )
+    parser.add_argument('targets', metavar='TARGET', type=str, nargs='*',
+                    help="build target to execute", default=['list'])
     parser.add_argument('--arg', metavar='KEY=VALUE', nargs='*',
                     help="overwrite environment arguments")
     args = parser.parse_args()
@@ -249,7 +260,7 @@ def build():
         target = to_execute.pop()
 
         if not env_listed and not target.phony:
-            print("Environment:")
+            print("environment:")
             for key, var in _STATE.envargs.items():
                 print(f"  {key}={_envargval(key, var.default)}")
             print()

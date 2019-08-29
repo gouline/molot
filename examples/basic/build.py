@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-__import__('sys').path.append('../../') # remove to work with pip package
+# Remove/comment next line to work with pip package
+from os import path, sys; sys.path.insert(0, path.join(path.dirname(sys.argv[0]), '..', '..')) 
 
 from molot import * #pylint: disable=unused-wildcard-import
 
