@@ -5,8 +5,8 @@ import logging
 import urllib.request
 import subprocess
 
-class Target:
-    """Base target with common operations.
+class Context:
+    """Base context with common operations.
     """
 
     def ensure_dir(self, path: str, keep_files: bool):
