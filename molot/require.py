@@ -16,6 +16,12 @@ def install(packages: list):
         elif type(p) is str:
             module, package = (p, p)
         else:
-            logging.fatal("Unrecognized type %s", p)
-        if not importlib.util.find_spec(module):
+            raise ValueError("Unrecognized type {}".format(p))
+
+        try:
+            spec = importlib.util.find_spec(module)
+        except ModuleNotFoundError:
+            spec = None
+        
+        if not spec:
             subprocess.run(['pip3', 'install', '--upgrade', package])

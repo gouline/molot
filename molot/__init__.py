@@ -11,7 +11,7 @@ import types
 import io
 from typing import Any
 
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
