@@ -10,16 +10,24 @@ import types
 import io
 from typing import Any
 
+__version__ = '0.1.7'
+
+# Logging
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+class ShutdownHandler(logging.Handler):
+    def emit(self, record):
+        logging.shutdown()
+        sys.exit(1)
+
+logging.getLogger().addHandler(ShutdownHandler(level=50))
+
 # Install third-party packages
 from .require import install
 install([
     ('yaml', 'pyyaml')
 ])
 import yaml
-
-__version__ = '0.1.6'
-
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Path to project root (usable in build.py)
 PROJECT_PATH = os.path.dirname(sys.argv[0])
