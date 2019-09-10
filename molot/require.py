@@ -1,3 +1,4 @@
+import os
 import subprocess
 import importlib.util
 import logging
@@ -24,4 +25,5 @@ def install(packages: list):
             spec = None
         
         if not spec:
-            subprocess.run(['pip3', 'install', '--upgrade', package])
+            pip = os.getenv('PIP', 'pip3')
+            subprocess.run([pip, 'install', '--upgrade', package])

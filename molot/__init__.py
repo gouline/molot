@@ -2,7 +2,6 @@
 import sys
 import os
 import shutil
-import yaml
 import logging
 import argparse
 import collections
@@ -11,7 +10,14 @@ import types
 import io
 from typing import Any
 
-__version__ = '0.1.5'
+# Install third-party packages
+from .require import install
+install([
+    ('yaml', 'pyyaml')
+])
+import yaml
+
+__version__ = '0.1.6'
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
