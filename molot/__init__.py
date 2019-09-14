@@ -8,9 +8,11 @@ import collections
 import subprocess
 import types
 import io
+import yaml
+import importlib.util
 from typing import Any
 
-__version__ = '0.1.7'
+__version__ = '0.2.0'
 
 # Logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -21,13 +23,6 @@ class ShutdownHandler(logging.Handler):
         sys.exit(1)
 
 logging.getLogger().addHandler(ShutdownHandler(level=50))
-
-# Install third-party packages
-from .require import install
-install([
-    ('yaml', 'pyyaml')
-])
-import yaml
 
 # Path to project root (usable in build.py)
 PROJECT_PATH = os.path.dirname(sys.argv[0])
@@ -108,14 +103,14 @@ def _list_targets_str() -> str:
         depends = "(depends: {})".format(', '.join(target.depends)) if target.depends else ''
         if targets_group != target.group:
             targets_group = target.group
-            print(f"  {target.group}", file=out)
+            print("  {}".format(target.group), file=out)
             
-        print(f"    {target.name} - {target.description} {depends}", file=out)
+        print("    {} - {} {}".format(target.name, target.description, depends), file=out)
 
     print("\nenvironment arguments:", file=out)
     for aname in _STATE.envargs:
-        envarg = _STATE.envargs[aname]
-        print(f"  {envarg.name} - {envarg.description} (default: {envarg.default})", file=out)
+        arg = _STATE.envargs[aname]
+        print("  {} - {} (default: {})".format(arg.name, arg.description, arg.default), file=out)
     
     return out.getvalue()
 
@@ -179,9 +174,9 @@ def load_config(path: str) -> Any:
             try:
                 config = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
-                print(f"Cannot parse config {path}: {exc}")
+                print("Cannot parse config {}: {}".format(path, exc))
     else:
-        print(f"Config {path} not found")
+        print("Config {} not found".format(path))
     return config
 
 def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJECT_PATH, 'build.yaml')) -> Any:
@@ -205,7 +200,7 @@ def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJ
     config = None
     if _STATE.config:
         if _STATE.config_path != path:
-            logging.fatal("Attempting to reload configuration")
+            logging.critical("Attempting to reload configuration")
         else:
             config = _STATE.config
     else:
@@ -216,7 +211,7 @@ def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJ
     if len(keys) > 0:
         config = getpath(config, keys)
         if required and config == None:
-            logging.fatal("Cannot find %s in configuration", '->'.join(keys))
+            logging.critical("Cannot find %s in configuration", '->'.join(keys))
 
     return config
 
@@ -257,7 +252,7 @@ def build():
 
         if not deps_satisfied:
             if name in evaluated:
-                print(f"Circular dependency detected when evaluating target {name}")
+                print("Circular dependency detected when evaluating target {}".format(name))
                 return
             else:
                 evaluated[name] = False
@@ -276,7 +271,7 @@ def build():
         if not env_listed and not target.phony:
             print("environment:")
             for key, var in _STATE.envargs.items():
-                print(f"  {key}={_envargval(key, var.default)}")
+                print("  {}={}".format(key, _envargval(key, var.default)))
             print()
             env_listed = True
 
@@ -302,7 +297,7 @@ def shell(command: str, piped: bool = False, silent: bool = False) -> str:
         stdout=subprocess.PIPE
 
     if not silent:
-        print(f"+ {command}")
+        print("+ {}".format(command))
 
     p = subprocess.Popen(command, shell=True, stdout=stdout)
     pcomm = p.communicate()
