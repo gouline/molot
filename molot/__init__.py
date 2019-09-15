@@ -12,7 +12,11 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
+
+# Import message
+sys.stdout.write("\rLoading Molot {} build script...".format(__version__))
+sys.stdout.flush()
 
 # Logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -218,6 +222,9 @@ def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJ
 def build():
     """Executes build. Call to build() must be at the end of build.py!
     """
+
+    sys.stdout.write("\r")
+    sys.stdout.flush()
 
     parser = argparse.ArgumentParser(
         description='Project build script.',
