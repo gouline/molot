@@ -1,0 +1,3 @@
+[submodule "examples/contexts/molotcontexts"]
+	path = examples/contexts/molotcontexts
+	url = git@github.com:traversals/molotcontexts.git
