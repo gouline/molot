@@ -12,10 +12,10 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 # Import message
-print("→ Molot {}".format(__version__))
+print("→ Running Molot {} build...".format(__version__))
 
 # Logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -98,22 +98,23 @@ def target(name: str = "", description: str = "", group: str = "<ungrouped>", de
 def _list_targets_str() -> str:
     out = io.StringIO()
 
-    print("available targets:", file=out)
     targets = list(_STATE.targets.values())
-    targets.sort(key=lambda x: (x.group.lower(), x.name.lower()))
-    targets_group = None
-    for target in targets:
-        depends = "(depends: {})".format(', '.join(target.depends)) if target.depends else ''
-        if targets_group != target.group:
-            targets_group = target.group
-            print("  {}".format(target.group), file=out)
-            
-        print("    {} - {} {}".format(target.name, target.description, depends), file=out)
+    if len(targets) > 0:
+        print("available targets:", file=out)
+        targets.sort(key=lambda x: (x.group.lower(), x.name.lower()))
+        targets_group = None
+        for target in targets:
+            depends = "(depends: {})".format(', '.join(target.depends)) if target.depends else ''
+            if targets_group != target.group:
+                targets_group = target.group
+                print("  {}".format(target.group), file=out)
+            print("    {} - {} {}".format(target.name, target.description, depends), file=out)
 
-    print("\nenvironment arguments:", file=out)
-    for aname in _STATE.envargs:
-        arg = _STATE.envargs[aname]
-        print("  {} - {} (default: {})".format(arg.name, arg.description, arg.default), file=out)
+    if len(_STATE.envargs) > 0:
+        print("\nenvironment arguments:", file=out)
+        for aname in _STATE.envargs:
+            arg = _STATE.envargs[aname]
+            print("  {} - {} (default: {})".format(arg.name, arg.description, arg.default), file=out)
     
     return out.getvalue()
 
