@@ -12,7 +12,7 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.8'
+__version__ = '0.2.9'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -336,7 +336,7 @@ def getpath(x: Any, keys: list) -> Any:
         x = x[key]
     return x
 
-def flatten(x: dict, prefix = '') -> dict:
+def flatten(x: dict, prefix = '', grouped = True) -> dict:
     """Flattens dictionary by a group (one level only).
     
     Arguments:
@@ -344,15 +344,23 @@ def flatten(x: dict, prefix = '') -> dict:
     
     Keyword Arguments:
         prefix {str} -- Group prefix to flatten by. (default: {''})
+        grouped (bool) -- True if parameters are internally grouped by key. (default: {True})
     
     Returns:
         dict -- New flattened dictionary.
     """
 
     output = {}
-    for group, sub in x.items():
-        for k, v in sub.items():
-            output[f"{prefix}{group}{k}"] = v
+
+    def flatten_inner(x: dict, output: dict, prefix: str):
+        for k, v in x.items():
+            output[f"{prefix}{k}"] = v
+
+    if grouped:
+        for k, v in x.items():
+            flatten_inner(v, output, prefix + k)
+    else:
+        flatten_inner(x, output, prefix)
     return output
 
 #endregion
