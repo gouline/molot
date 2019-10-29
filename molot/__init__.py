@@ -12,7 +12,7 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -218,7 +218,7 @@ def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJ
             safe_keys = map(lambda x: x if x != None else 'None', keys)
             logging.critical("Cannot find %s in configuration", '->'.join(safe_keys))
 
-    return dict(config)
+    return config.copy() if config else config
 
 def build():
     """Executes build. Call to build() must be at the end of build.py!
