@@ -12,7 +12,7 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -218,7 +218,7 @@ def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJ
             safe_keys = map(lambda x: x if x != None else 'None', keys)
             logging.critical("Cannot find %s in configuration", '->'.join(safe_keys))
 
-    return config
+    return dict(config)
 
 def build():
     """Executes build. Call to build() must be at the end of build.py!
@@ -333,5 +333,24 @@ def getpath(x: Any, keys: list) -> Any:
             return None
         x = x[key]
     return x
+
+def flatten(x: dict, prefix = '') -> dict:
+    """Flattens dictionary by a group (one level only).
+    
+    Arguments:
+        x {dict} -- Dictionary to be flattened.
+    
+    Keyword Arguments:
+        prefix {str} -- Group prefix to flatten by. (default: {''})
+    
+    Returns:
+        dict -- New flattened dictionary.
+    """
+
+    output = {}
+    for group, sub in x.items():
+        for k, v in sub.items():
+            output[f"{prefix}{group}{k}"] = v
+    return output
 
 #endregion
