@@ -12,7 +12,7 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.9'
+__version__ = '0.2.10'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -40,6 +40,7 @@ class _State:
 
         self.config_path = None
         self.config = None
+        self.envconfig = None
         
     def _preparse_envargs(self):
         parser = argparse.ArgumentParser(add_help=False)
@@ -158,6 +159,8 @@ def envarg(name: str, default: str = None, description: str = "") -> str:
     )
     return _envargval(name, default)
 
+ENV = envarg('ENV', description="build environment, e.g. dev, test, prod")
+
 #endregion
 
 #region Build script functions
@@ -221,6 +224,37 @@ def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJ
     if isinstance(config, dict) or isinstance(config, list):
         return config.copy()
     return config
+
+def envconfig(keys = [], root = 'Environments', inherit = 'Inherit') -> dict:
+    """Loads environment-specific configuration or returns previously loaded one.
+
+    Environment-specific configuration is part of regular configuration, it's just
+    a dictionary indexed by the ENV environment argument that contains values specific
+    to current running environment.
+
+    It also allows keys to be inherited by the environment name.
+    
+    Keyword Arguments:
+        keys {list} -- List of recursive keys to retrieve. (default: {[]})
+        root {str} -- Name of root element containing environment-specific configuration. (default: {'Environments'})
+        inherit {str} -- Name of parameter containing environment to inherit from. (default: {'Inherit'})
+    
+    Returns:
+        dict -- Loaded configuration dictionary.
+    """
+
+    envconfig = None
+    if _STATE.envconfig:
+        envconfig = _STATE.envconfig
+    else:
+        envconfig = config([root, ENV])
+        while inherit in envconfig:
+            fields = config([root, envconfig.pop(inherit)])
+            fields = {k: v for k, v in fields.items() if k not in envconfig}
+            envconfig.update(fields)
+        _STATE.envconfig = envconfig
+    
+    return getpath(envconfig, keys)
 
 def build():
     """Executes build. Call to build() must be at the end of build.py!

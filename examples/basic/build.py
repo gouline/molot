@@ -5,7 +5,7 @@ from os import path, sys; sys.path.insert(0, path.join(path.dirname(sys.argv[0])
 
 from molot import * #pylint: disable=unused-wildcard-import
 
-ENV = envarg('ENV', default='dev', description="build environment")
+print(envconfig())
 
 @target(description="lists current directory items")
 def ls():
