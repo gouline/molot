@@ -12,7 +12,7 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.10'
+__version__ = '0.2.11'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -336,9 +336,12 @@ def shell(command: str, piped: bool = False, silent: bool = False) -> str:
     stdout = None
     if piped:
         stdout=subprocess.PIPE
+    
+    # Allow arbitrary indentation of block strings
+    command = '\n'.join([x.lstrip() for x in command.split('\n')])
 
     if not silent:
-        print("+ {}".format(command))
+        print("+ Shell: {}".format(command))
 
     p = subprocess.Popen(command, shell=True, stdout=stdout)
     pcomm = p.communicate()
