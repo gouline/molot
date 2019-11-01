@@ -12,7 +12,7 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.12'
+__version__ = '0.2.13'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -411,5 +411,20 @@ def git_hash() -> str:
         .communicate()[0] \
         .decode('utf-8') \
         .replace('\n', '')
+
+
+def md5(*files: list) -> str:
+    """Computes MD5 checksum of files.
+    
+    Returns:
+        str -- Combined MD5 checksum for multiple files.
+    """
+
+    import hashlib
+    hash = hashlib.md5()
+    for f in files:
+        if os.path.isfile(f):
+            hash.update(open(f, 'rb').read())
+    return hash.hexdigest()
 
 #endregion
