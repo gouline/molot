@@ -12,7 +12,7 @@ import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.11'
+__version__ = '0.2.12'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -399,5 +399,17 @@ def flatten(x: dict, prefix = '', grouped = True) -> dict:
     else:
         flatten_inner(x, output, prefix)
     return output
+
+def git_hash() -> str:
+    """Extracts Git hash from current directory.
+    
+    Returns:
+        str -- Git hash encoded as UTF-8.
+    """
+
+    return subprocess.Popen(['git', 'rev-parse', '--verify', 'HEAD'], stdout=subprocess.PIPE) \
+        .communicate()[0] \
+        .decode('utf-8') \
+        .replace('\n', '')
 
 #endregion

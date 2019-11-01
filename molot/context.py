@@ -3,6 +3,7 @@ import shutil
 import logging
 import urllib.request
 import subprocess
+from molot import git_hash
 
 class Context:
     """Base context with common operations.
@@ -56,11 +57,7 @@ class Context:
             out_path {str} -- Output directory path.
         """
 
-        process = subprocess.Popen(['git', 'rev-parse', '--verify', 'HEAD'], stdout=subprocess.PIPE)
-        output = process.communicate()[0] \
-            .decode('utf-8') \
-            .replace('\n', '')
-
+        output = git_hash()
         logging.info("Writing Git hash %s", output)
         out_file_path = os.path.join(out_path, 'git-hash')
         with open(out_file_path, 'w') as file:
