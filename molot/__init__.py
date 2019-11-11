@@ -14,7 +14,7 @@ from typing import Any
 import yaml
 from munch import munchify
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -141,7 +141,7 @@ def _envargval(name: str, default: str) -> str:
     return os.getenv(name, default)
 
 def envarg(name: str, default: str = None, description: str = "") -> str:
-    """Decorator for environment argument.
+    """Decorator for string environment argument.
     
     Arguments:
         name {str} -- Unique name.
@@ -160,6 +160,45 @@ def envarg(name: str, default: str = None, description: str = "") -> str:
         default=default
     )
     return _envargval(name, default)
+
+def envarg_bool(name: str, default: bool = False, description: str = "") -> bool:
+    """Decorator for boolean environment argument.
+    
+    Arguments:
+        name {str} -- Unique name.
+    
+    Keyword Arguments:
+        default {str} -- Default value. (default: {False})
+        description {str} -- Human-readable description. (default: {""})
+    
+    Returns:
+        bool -- Retrieved or default value.
+    """
+
+    v = envarg(name, str(default), description)
+    if v:
+        return v.lower() == 'true'
+    return False
+
+def envarg_int(name: str, default: int = 0, description: str = "") -> int:
+    """Decorator for integer environment argument.
+    
+    Arguments:
+        name {str} -- Unique name.
+    
+    Keyword Arguments:
+        default {int} -- Default value. (default: {0})
+        description {str} -- Human-readable description. (default: {""})
+    
+    Returns:
+        int -- Retrieved or default value.
+    """
+
+    v = envarg(name, str(default), description)
+    try:
+        return int(v)
+    except ValueError:
+        return default
 
 ENV = envarg('ENV', description="build environment, e.g. dev, test, prod")
 
