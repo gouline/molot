@@ -8,11 +8,13 @@ import collections
 import subprocess
 import types
 import io
-import yaml
 import importlib.util
 from typing import Any
 
-__version__ = '0.2.13'
+import yaml
+from munch import munchify
+
+__version__ = '0.3.0'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))
@@ -172,14 +174,14 @@ def load_config(path: str) -> Any:
         path {str} -- Path to configuration file.
     
     Returns:
-        Any -- Configuration dictionary or list.
+        Any -- Configuration dictionary or list (supports munch attribute notation).
     """
 
     config = dict()
     if os.path.isfile(path):
         with open(path, 'r') as stream:
             try:
-                config = yaml.safe_load(stream)
+                config = munchify(yaml.safe_load(stream))
             except yaml.YAMLError as exc:
                 print("Cannot parse config {}: {}".format(path, exc))
     else:
@@ -201,7 +203,7 @@ def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJ
         path {str} -- Path to configuration file. (default: {PROJECT_PATH/build.yaml})
     
     Returns:
-        Any -- Loaded configuration dict, list or None.
+        Any -- Loaded configuration dict, list (support munch attribute notation) or None.
     """
 
     config = None
@@ -240,7 +242,7 @@ def envconfig(keys = [], root = 'Environments', inherit = 'Inherit') -> dict:
         inherit {str} -- Name of parameter containing environment to inherit from. (default: {'Inherit'})
     
     Returns:
-        dict -- Loaded configuration dictionary.
+        dict -- Loaded configuration dictionary (supports munch attribute notation).
     """
 
     envconfig = None
