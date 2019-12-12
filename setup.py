@@ -23,7 +23,7 @@ setup(
     description="Molot - lightweight build tool for software projects.",
     long_description=readme,
     long_description_content_type='text/x-rst',
-    url='https://github.com/sydspace/molot',
+    url='https://github.com/gouline/molot',
     license='MIT License',
     packages=find_packages(exclude=['tests']),
     test_suite='tests',
