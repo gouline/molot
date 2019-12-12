@@ -14,7 +14,7 @@ from typing import Any
 import yaml
 from munch import munchify
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 # Import message
 print("→ Running Molot {} build...".format(__version__))

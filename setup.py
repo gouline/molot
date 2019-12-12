@@ -23,6 +23,8 @@ setup(
     description="Molot - lightweight build tool for software projects.",
     long_description=readme,
     long_description_content_type='text/x-rst',
+    author="Mike Gouline",
+    author_email="hello@gouline.net",
     url='https://github.com/gouline/molot',
     license='MIT License',
     packages=find_packages(exclude=['tests']),
