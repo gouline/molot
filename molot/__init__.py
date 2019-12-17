@@ -14,10 +14,7 @@ from typing import Any
 import yaml
 from munch import munchify
 
-__version__ = '0.3.2'
-
-# Import message
-print("→ Running Molot {} build...".format(__version__))
+__version__ = '0.3.3'
 
 # Logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -301,6 +298,8 @@ def build():
     """Executes build. Call to build() must be at the end of build.py!
     """
 
+    print("→ Running Molot {} build...".format(__version__))
+
     parser = argparse.ArgumentParser(
         description='Project build script.',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -360,7 +359,22 @@ def build():
         print("→ Executing target:", target.name)
         target.f()
 
-def shell(command: str, piped: bool = False, silent: bool = False) -> str:
+class ReturnCodeError(Exception):
+    """Error for failed shell commands in piped mode.
+    """
+
+    def __init__(self, code: int, output: str):
+        """Constructor.
+        
+        Arguments:
+            code {int} -- Return code from shell.
+            output {str} -- Text output of error.
+        """
+
+        self.code = code
+        self.output = output
+
+def shell(command: str, piped: bool = False) -> str:
     """Runs shell command.
     
     Arguments:
@@ -368,27 +382,31 @@ def shell(command: str, piped: bool = False, silent: bool = False) -> str:
     
     Keyword Arguments:
         piped {bool} -- Returns output as string if true, otherwise prints it in stdout. (default: {False})
-        silent {bool} -- Suppresses printing of command before running it. (default: {False})
     
     Returns:
         str -- Returns string output when piped, nothing otherwise.
     """
 
-    stdout = None
+    pipe = None
     if piped:
-        stdout=subprocess.PIPE
+        pipe = subprocess.PIPE
     
     # Allow arbitrary indentation of block strings
     command = '\n'.join([x.lstrip() for x in command.split('\n')])
 
-    if not silent:
-        print("+ Shell: {}".format(command))
+    print("+ Shell: {}".format(command))
 
-    p = subprocess.Popen(command, shell=True, stdout=stdout)
-    pcomm = p.communicate()
+    p = subprocess.Popen(command, shell=True, stdout=pipe, stderr=pipe)
+    out, err = p.communicate()
+
+    if p.returncode != 0:
+        if piped:
+            raise ReturnCodeError(p.returncode, err.decode('utf-8'))
+        else:
+            sys.exit(p.returncode)
+
     if piped: 
-        return pcomm[0].decode("utf-8")
-    
+        return out.decode('utf-8')
     return None
 
 def getpath(x: Any, keys: list) -> Any:
