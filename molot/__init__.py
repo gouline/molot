@@ -197,6 +197,24 @@ def envarg_int(name: str, default: int = 0, description: str = "") -> int:
     except ValueError:
         return default
 
+def envargs_file(path: str):
+    """Read environment arguments from file and save them as defaults.
+    
+    Arguments:
+        path {str} -- Path to configuration file.
+    """
+
+    if os.path.isfile(path):
+        with open(path, 'r') as stream:
+            try:
+                config = yaml.safe_load(stream)
+                for k, v in config.items():
+                    _STATE.envargvals[k] = v
+            except yaml.YAMLError as exc:
+                print("Cannot parse envargs {}: {}".format(path, exc))
+    else:
+        print("Envargs {} not found".format(path))
+
 ENV = envarg('ENV', description="build environment, e.g. dev, test, prod")
 
 #endregion
