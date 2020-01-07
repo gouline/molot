@@ -14,7 +14,7 @@ from typing import Any
 import yaml
 from munch import munchify
 
-__version__ = '0.3.3'
+__version__ = '0.4.0'
 
 # Logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -34,7 +34,8 @@ class _State:
     def __init__(self):
         self.targets = dict()
         self.envargs = dict()
-        self.envargvals = dict()
+        self.envarg_vals_base = dict()
+        self.envarg_vals_override = dict()
         self._preparse_envargs()
 
         self.config_path = None
@@ -50,7 +51,7 @@ class _State:
             for a in args.arg:
                 aparts = a.split('=', 1)
                 if len(aparts) >= 2:
-                    self.envargvals[aparts[0]] = aparts[1]
+                    self.envarg_vals_override[aparts[0]] = aparts[1]
 
 _STATE = _State()
 
@@ -133,9 +134,48 @@ class _EnvArgDef:
         self.default = default
 
 def _envargval(name: str, default: str) -> str:
-    if name in _STATE.envargvals:
-        return _STATE.envargvals[name]
-    return os.getenv(name, default)
+    # P1: override passed via --arg
+    if name in _STATE.envarg_vals_override:
+        return _STATE.envarg_vals_override[name]
+    
+    # P2: environment variable
+    val = os.getenv(name)
+    if val is not None:
+        return val
+    
+    # P3: properties file passed via envargs_file()
+    if name in _STATE.envarg_vals_base:
+        return _STATE.envarg_vals_base[name]
+    
+    # P4: provided default
+    return default
+
+def _read_properties(path: str, sep='=', comment_char='#') -> dict:
+    """Read the file passed as parameter as a properties file.
+    
+    Source: https://stackoverflow.com/a/31852401/818393
+    
+    Arguments:
+        path {str} -- Path to properties file.
+    
+    Keyword Arguments:
+        sep {str} -- Key-value separator. (default: {'='})
+        comment_char {str} -- Character denoting comment lines. (default: {'#'})
+    
+    Returns:
+        dict -- Dictionary of properties.
+    """
+
+    props = {}
+    with open(path, "rt") as f:
+        for line in f:
+            l = line.strip()
+            if l and not l.startswith(comment_char):
+                key_value = l.split(sep)
+                key = key_value[0].strip()
+                value = sep.join(key_value[1:]).strip().strip('"') 
+                props[key] = value
+    return props
 
 def envarg(name: str, default: str = None, description: str = "") -> str:
     """Decorator for string environment argument.
@@ -198,20 +238,23 @@ def envarg_int(name: str, default: int = 0, description: str = "") -> int:
         return default
 
 def envargs_file(path: str):
-    """Read environment arguments from file and save them as defaults.
+    """Reads environment arguments from file and save them as defaults.
+
+    This expects a simple properties file of form:
+        # Some comment
+        KEY1 = VALUE1
+        KEY2=VALUE2
+        KEY3 = "VALUE3"
     
     Arguments:
         path {str} -- Path to configuration file.
     """
 
     if os.path.isfile(path):
-        with open(path, 'r') as stream:
-            try:
-                config = yaml.safe_load(stream)
-                for k, v in config.items():
-                    _STATE.envargvals[k] = v
-            except yaml.YAMLError as exc:
-                print("Cannot parse envargs {}: {}".format(path, exc))
+        props = _read_properties(path)
+        for k, v in props.items():
+            if k not in _STATE.envarg_vals_base:
+                _STATE.envarg_vals_base[k] = v
     else:
         print("Envargs {} not found".format(path))
 
