@@ -5,6 +5,10 @@ from os import path, sys; sys.path.insert(0, path.join(path.dirname(sys.argv[0])
 
 from molot import * #pylint: disable=unused-wildcard-import
 
+envargs_file(os.path.join(PROJECT_PATH, 'credentials.env'))
+
+API_TOKEN = envarg('API_TOKEN')
+
 @target(description="lists current directory items")
 def ls():
     shell("ls")
