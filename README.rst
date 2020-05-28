@@ -20,7 +20,7 @@ Here's how to start your build script.
 .. code-block:: python
 
     #!/usr/bin/env python3
-    from molot.build import * #pylint: disable=unused-wildcard-import
+    from molot.builder import * #pylint: disable=unused-wildcard-import
 
 Note that ``#pylint: disable=unused-wildcard-import`` is optional but will help
 keep your editor quiet about unused imports.
@@ -211,7 +211,7 @@ Then at the top of your script, you'll be able to do the following:
 
     #!/usr/bin/env python3
     __import__('build_boot').preload_molot('X.Y.Z')
-    from molot.build import * #pylint: disable=unused-wildcard-import
+    from molot.builder import * #pylint: disable=unused-wildcard-import
 
 This downloads a specific version ``X.Y.Z`` if it's not already installed.
 
