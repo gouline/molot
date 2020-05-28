@@ -7,7 +7,7 @@ if [[ ! -d "$DIR/.venv" ]]; then
     python3 -m venv .venv \
         && source .venv/bin/activate \
         && pip3 install --upgrade pip \
-        && pip3 install "molot>=0.5.0,<0.6.0"
+        && pip3 install "molot>=0.5.1,<0.6.0"
 else
     source .venv/bin/activate
 fi
