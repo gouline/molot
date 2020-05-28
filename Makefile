@@ -1,4 +1,4 @@
-.PHONY: all build check clean dev-requirements
+.PHONY: all build check clean dev-requirements dev-install
 
 all: build
 
@@ -16,3 +16,6 @@ clean:
 
 dev-requirements:
 	pip3 install -r dev-requirements.txt
+
+dev-install: build
+	pip3 uninstall -y molot && pip3 install dist/molot-*-py3-none-any.whl

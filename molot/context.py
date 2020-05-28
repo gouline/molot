@@ -3,7 +3,7 @@ import shutil
 import logging
 import urllib.request
 import subprocess
-from molot import git_hash
+from molot.build import git_hash
 
 class Context:
     """Base context with common operations.

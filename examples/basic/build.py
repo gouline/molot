@@ -3,7 +3,7 @@
 # Remove/comment next line to work with pip package
 from os import path, sys; sys.path.insert(0, path.join(path.dirname(sys.argv[0]), '..', '..')) 
 
-from molot import * #pylint: disable=unused-wildcard-import
+from molot.build import * #pylint: disable=unused-wildcard-import
 
 envargs_file(os.path.join(PROJECT_PATH, 'credentials.env'))
 
