@@ -128,10 +128,11 @@ def _list_targets():
 #region Environment arguments
 
 class _EnvArgDef:
-    def __init__(self, name: str, description: str, default: str):
+    def __init__(self, name: str, description: str, default: str, sensitive: bool):
         self.name = name
         self.description = description
         self.default = default
+        self.sensitive = sensitive
 
 def _envargval(name: str, default: str) -> str:
     # P1: override passed via --arg
@@ -177,7 +178,7 @@ def _read_properties(path: str, sep='=', comment_char='#') -> dict:
                 props[key] = value
     return props
 
-def envarg(name: str, default: str = None, description: str = "") -> str:
+def envarg(name: str, default: str = None, description: str = "", sensitive: bool = False) -> str:
     """Decorator for string environment argument.
     
     Arguments:
@@ -186,6 +187,7 @@ def envarg(name: str, default: str = None, description: str = "") -> str:
     Keyword Arguments:
         default {str} -- Default value. (default: {None})
         description {str} -- Human-readable description. (default: {""})
+        sensitive {bool} -- Control whether value is hidden from logs. (default: {False})
     
     Returns:
         str -- Retrieved or default value.
@@ -194,7 +196,8 @@ def envarg(name: str, default: str = None, description: str = "") -> str:
     _STATE.envargs[name] = _EnvArgDef(
         name=name,
         description=description if description else "<no description>",
-        default=default
+        default=default,
+        sensitive=sensitive
     )
     return _envargval(name, default)
 
@@ -319,7 +322,10 @@ def evaluate():
         if not env_listed and not target.phony:
             print("environment:")
             for key, var in _STATE.envargs.items():
-                print("  {}={}".format(key, _envargval(key, var.default)))
+                value = _envargval(key, var.default)
+                if value and var.sensitive:
+                    value = '**********'
+                print("  {}={}".format(key, value))
             print()
             env_listed = True
 
@@ -347,7 +353,7 @@ class ReturnCodeError(Exception):
         self.code = code
         self.output = output
 
-def shell(command: str, piped: bool = False) -> str:
+def shell(command: str, piped: bool = False, sensitive: bool = False) -> str:
     """Runs shell command.
     
     Arguments:
@@ -355,6 +361,7 @@ def shell(command: str, piped: bool = False) -> str:
     
     Keyword Arguments:
         piped {bool} -- Returns output as string if true, otherwise prints it in stdout. (default: {False})
+        sensitive {bool} -- Control whether shell command is hidden from logs. (default: {False})
     
     Returns:
         str -- Returns string output when piped, nothing otherwise.
@@ -367,7 +374,10 @@ def shell(command: str, piped: bool = False) -> str:
     # Allow arbitrary indentation of block strings
     command = '\n'.join([x.lstrip() for x in command.split('\n')])
 
-    print("+ Shell: {}".format(command))
+    if sensitive:
+        print("+ Shell")
+    else:
+        print("+ Shell: {}".format(command))
 
     p = subprocess.Popen(command, shell=True, stdout=pipe, stderr=pipe)
     out, err = p.communicate()
