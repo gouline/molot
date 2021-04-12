@@ -10,7 +10,6 @@ from munch import munchify
 # Holder for internal builder state
 class _BuildState:
     def __init__(self):
-        self.config_path = None
         self.config = None
         self.envconfig = None
 
@@ -20,68 +19,83 @@ ENV = envarg('ENV', description="build environment, e.g. dev, test, prod")
 
 #region Build script functions
 
-def load_config(path: str) -> Any:
+def load_config(path = os.path.join(PROJECT_PATH, 'build.yaml')) -> Any:
     """Loads configuration from path.
     
     Arguments:
-        path {str} -- Path to configuration file.
+        path {str} -- Path to configuration file. (default: {PROJECT_PATH/build.yaml})
     
     Returns:
         Any -- Configuration dictionary or list (supports munch attribute notation).
     """
 
-    config = dict()
-    if os.path.isfile(path):
-        with open(path, 'r') as stream:
-            try:
-                config = yaml.round_trip_load(stream, preserve_quotes=True)
-                config = munchify(config)
-            except yaml.scanner.ScannerError as exc:
-                print("Cannot parse config {}: {}".format(path, exc))
-    else:
+    config = None
+    if not os.path.isfile(path):
         print("Config {} not found".format(path))
+        raise ValueError("Config not found!")
+
+    with open(path, 'r') as stream:
+        try:
+            config = yaml.round_trip_load(stream, preserve_quotes=True)
+            config = munchify(config)
+        except yaml.scanner.ScannerError as exc:
+            print("Cannot parse config {}: {}".format(path, exc))
+    
+    _BUILD_STATE.config = config
     return config
 
-def config(keys: list = [], required: bool = True, path: str = os.path.join(PROJECT_PATH, 'build.yaml')) -> Any:
+def config(keys: list = [], required = True) -> Any:
     """Loads configuration from file or returns previously loaded one.
 
-    Loading from file will be done on the first call. Subsequent loads from different file
-    will raise a fatal error. If you have multiple configuration files, use load_config()
-    directly and store those multiple configurations in build.py.
+    Loading from file will be done on the first call.
     
     Arguments:
         keys {list} -- List of recursive keys to retrieve.
 
     Keyword Arguments:
         required {bool} -- Throws fatal error if not found, when set to True (default: {True})
-        path {str} -- Path to configuration file. (default: {PROJECT_PATH/build.yaml})
     
     Returns:
         Any -- Loaded configuration dict, list (support munch attribute notation) or None.
     """
 
-    config = None
-    if _BUILD_STATE.config:
-        if _BUILD_STATE.config_path != path:
-            logging.critical("Attempting to reload configuration")
-        else:
-            config = _BUILD_STATE.config
-    else:
-        config = load_config(path)
-        _BUILD_STATE.config = config
-        _BUILD_STATE.config_path = path
-
+    v = _BUILD_STATE.config if _BUILD_STATE.config else load_config()
+    
     if len(keys) > 0:
-        config = getpath(config, keys)
-        if required and config == None:
+        v = getpath(v, keys)
+        if required and v == None:
             safe_keys = map(lambda x: x if x != None else 'None', keys)
             logging.critical("Cannot find %s in configuration", '->'.join(safe_keys))
 
-    if isinstance(config, dict) or isinstance(config, list):
-        return config.copy()
-    return config
+    return v.copy() if isinstance(v, dict) or isinstance(v, list) else v
 
-def envconfig(keys = [], root = 'Environments', inherit = 'Inherit') -> dict:
+def load_envconfig(root = 'Environments', inherit = 'Inherit') -> dict:
+    """Loads environment-specific configuration.
+
+    Environment-specific configuration is part of regular configuration, it's just
+    a dictionary indexed by the ENV environment argument that contains values specific
+    to current running environment.
+
+    It also allows keys to be inherited by the environment name.
+    
+    Keyword Arguments:
+        root {str} -- Name of root element containing environment-specific configuration. (default: {'Environments'})
+        inherit {str} -- Name of parameter containing environment to inherit from. (default: {'Inherit'})
+    
+    Returns:
+        dict -- Loaded configuration dictionary (supports munch attribute notation).
+    """
+
+    envconfig = config([root, ENV])
+    while inherit in envconfig:
+        fields = config([root, envconfig.pop(inherit)])
+        fields = {k: v for k, v in fields.items() if k not in envconfig}
+        envconfig.update(fields)
+    
+    _BUILD_STATE.envconfig = envconfig
+    return envconfig
+
+def envconfig(keys = []) -> dict:
     """Loads environment-specific configuration or returns previously loaded one.
 
     Environment-specific configuration is part of regular configuration, it's just
@@ -92,25 +106,16 @@ def envconfig(keys = [], root = 'Environments', inherit = 'Inherit') -> dict:
     
     Keyword Arguments:
         keys {list} -- List of recursive keys to retrieve. (default: {[]})
-        root {str} -- Name of root element containing environment-specific configuration. (default: {'Environments'})
-        inherit {str} -- Name of parameter containing environment to inherit from. (default: {'Inherit'})
     
     Returns:
         dict -- Loaded configuration dictionary (supports munch attribute notation).
     """
 
-    envconfig = None
-    if _BUILD_STATE.envconfig:
-        envconfig = _BUILD_STATE.envconfig
-    else:
-        envconfig = config([root, ENV])
-        while inherit in envconfig:
-            fields = config([root, envconfig.pop(inherit)])
-            fields = {k: v for k, v in fields.items() if k not in envconfig}
-            envconfig.update(fields)
-        _BUILD_STATE.envconfig = envconfig
+    v = _BUILD_STATE.envconfig if _BUILD_STATE.envconfig else load_envconfig()
     
-    return getpath(envconfig, keys)
+    v = getpath(v, keys)
+
+    return v.copy() if isinstance(v, dict) or isinstance(v, list) else v
 
 def getpath(x: Any, keys: list) -> Any:
     """Gets recursive key path from dictionary or list.
