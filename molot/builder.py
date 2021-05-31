@@ -4,7 +4,7 @@ Functionality specific to build scripts.
 
 from . import * #pylint: disable=unused-wildcard-import
 
-import ruamel.yaml as yaml
+from ruamel.yaml import YAML
 from munch import munchify
 
 # Holder for internal builder state
@@ -36,7 +36,9 @@ def load_config(path = os.path.join(PROJECT_PATH, 'build.yaml')) -> Any:
 
     with open(path, 'r') as stream:
         try:
-            config = yaml.round_trip_load(stream, preserve_quotes=True)
+            yaml = YAML()
+            yaml.preserve_quotes = True
+            config = yaml.load(stream)
             config = munchify(config)
         except yaml.scanner.ScannerError as exc:
             print("Cannot parse config {}: {}".format(path, exc))
