@@ -2,7 +2,7 @@
 Base script execution functionality (can be imported separately).
 """
 
-__version__ = '0.7.1'
+__version__ = '0.7.2'
 
 import sys
 import os
