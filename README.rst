@@ -140,6 +140,12 @@ Alternatively, it can be passed as an argument:
 
     ./build.py sometarget --arg ENV=prod
 
+Finally, you can pass .env file to load:
+
+.. code-block:: bash
+
+    ./build.py sometarget --dotenv ~/somewhere/.env
+
 If both are passed simultaneously (not recommended), then argument takes
 precedence over the environment variable.
 

@@ -15,6 +15,7 @@ import io
 import shutil
 import importlib.util
 from typing import Any
+from dotenv import load_dotenv
 
 # Logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -45,7 +46,12 @@ class _State:
     def _preparse_envargs(self):
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument('--arg', nargs='*')
+        parser.add_argument('--dotenv', nargs='*')
         args, _ = parser.parse_known_args()
+
+        if args.dotenv:
+            for dotenv_path in args.dotenv:
+                load_dotenv(dotenv_path=dotenv_path)
 
         if args.arg:
             for a in args.arg:
@@ -279,6 +285,8 @@ def evaluate():
                     help="target to execute", default=['list'])
     parser.add_argument('--arg', metavar='KEY=VALUE', nargs='*',
                     help="overwrite environment arguments")
+    parser.add_argument('--dotenv', metavar='PATH', type=str, nargs='*',
+                    help="path to .env file to load")
     args = parser.parse_args()
 
     to_evaluate = collections.deque()
