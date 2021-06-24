@@ -3,13 +3,18 @@ import logging
 import importlib.util
 from molot import envarg
 
-_INSTALLER = envarg('INSTALLER', default='pip3 install', description="command to install external packages")
+_INSTALLER = envarg(
+    "INSTALLER",
+    default="pip3 install",
+    description="command to install external packages",
+)
+
 
 def install(packages: list):
     """Installs external packages.
-    
+
     Arguments:
-        packages {list} -- List of external packages, if package and module 
+        packages {list} -- List of external packages, if package and module
             name are the same; otherwise list of tuples (module, package).
     """
 
@@ -25,10 +30,10 @@ def install(packages: list):
             spec = importlib.util.find_spec(module)
         except ModuleNotFoundError:
             spec = None
-        
+
         if not spec:
             cmd = [*_INSTALLER.split(), package]
-            print("→ Installing: {}".format(' '.join(cmd)))
+            print("→ Installing: {}".format(" ".join(cmd)))
             proc = subprocess.run(cmd)
             if proc.returncode != 0:
                 logging.critical("Installer failed (code %d)", proc.returncode)
