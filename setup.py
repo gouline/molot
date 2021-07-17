@@ -6,20 +6,16 @@ from setuptools import setup, find_packages
 if sys.version_info < (3, 6):
     raise ValueError("Requires Python 3.6+")
 
-from molot import __version__
-
-with open("requirements.txt", "r") as f:
-    requires = [x.strip() for x in f if x.strip()]
-
-with open("test-requirements.txt", "r") as f:
-    test_requires = [x.strip() for x in f if x.strip()]
+def requires_from_file(filename: str) -> list:
+    with open(filename, "r") as f:
+        return [x.strip() for x in f if x.strip()]
 
 with open("README.rst", "r") as f:
     readme = f.read()
 
 setup(
     name="molot",
-    version=__version__,
+    use_scm_version=True,
     description="Molot - lightweight build tool for software projects.",
     long_description=readme,
     long_description_content_type="text/x-rst",
@@ -28,10 +24,11 @@ setup(
     url="https://github.com/gouline/molot",
     license="MIT License",
     packages=find_packages(exclude=["tests"]),
-    test_suite="tests",
-    tests_require=test_requires,
-    install_requires=requires,
-    extras_require={"test": test_requires},
+    install_requires=requires_from_file("requirements.txt"),
+    extras_require={
+        "test":requires_from_file("requirements-test.txt")
+    },
+    setup_requires=["setuptools_scm"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -41,6 +38,8 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
