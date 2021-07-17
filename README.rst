@@ -1,6 +1,22 @@
 Molot
 #####
 
+.. image:: https://github.com/gouline/molot/actions/workflows/master.yml/badge.svg
+    :target: https://github.com/gouline/molot/actions/workflows/master.yml
+    :alt: GitHub Actions
+.. image:: https://img.shields.io/pypi/v/molot
+    :target: https://pypi.org/project/molot/
+    :alt: PyPI
+.. image:: https://pepy.tech/badge/molot
+    :target: https://pepy.tech/project/molot
+    :alt: Downloads
+.. image:: https://black.readthedocs.io/en/stable/_static/license.svg
+    :target: https://github.com/gouline/molot/blob/master/LICENSE
+    :alt: License: MIT
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt: Code style: black
+
 Lightweight build tool for software projects.
 
 Requirements
