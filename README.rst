@@ -10,7 +10,7 @@ Molot
 .. image:: https://pepy.tech/badge/molot
     :target: https://pepy.tech/project/molot
     :alt: Downloads
-.. image:: https://black.readthedocs.io/en/stable/_static/license.svg
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
     :target: https://github.com/gouline/molot/blob/master/LICENSE
     :alt: License: MIT
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
