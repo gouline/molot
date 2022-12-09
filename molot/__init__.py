@@ -213,7 +213,7 @@ def _read_properties(path: str, sep="=", comment_char="#") -> dict:
     """
 
     props = {}
-    with open(path, "rt") as f:
+    with open(path, "rt", encoding="utf-8") as f:
         for line in f:
             l = line.strip()
             if l and not l.startswith(comment_char):
@@ -321,6 +321,8 @@ def envargs_file(path: str):
 def evaluate():
     """Evaluates your scripts. Call to evaluate() must be at the very end of your script!"""
 
+    success = True
+
     print("→ Running Molot {}...".format(__version__))
 
     parser = argparse.ArgumentParser(
@@ -353,6 +355,7 @@ def evaluate():
     while len(to_evaluate) > 0:
         name = to_evaluate[-1]
         if name not in _STATE.targets:
+            success = False
             print("Target not found:", name, "\n")
             _list_targets()
             break
@@ -400,6 +403,8 @@ def evaluate():
 
         print("→ Executing target:", target.name)
         target.f()
+    
+    sys.exit(0 if success else 1)
 
 
 def build():
