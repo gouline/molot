@@ -1,21 +1,19 @@
 """
-Base script execution functionality (can be imported separately).
+Base script execution functionality.
 """
 
-from ._version import version as __version__
-
-import sys
-import os
-import logging
 import argparse
 import collections
-import subprocess
-import types
 import io
-import shutil
-import importlib.util
-from typing import Any
+import logging
+import os
+import subprocess
+import sys
+import types
+
 from dotenv import load_dotenv
+
+from ._version import version as __version__
 
 # Logging
 logging.basicConfig(
@@ -33,6 +31,7 @@ logging.getLogger().addHandler(ShutdownHandler(level=50))
 
 # Path to project root (usable in script)
 PROJECT_PATH = os.path.dirname(sys.argv[0])
+
 
 # Holder for internal script state
 class _State:
@@ -403,14 +402,8 @@ def evaluate():
 
         print("→ Executing target:", target.name)
         target.f()
-    
+
     sys.exit(0 if success else 1)
-
-
-def build():
-    """Alias for evaluate() for backwards compatibility."""
-
-    evaluate()
 
 
 class ReturnCodeError(Exception):

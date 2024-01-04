@@ -1,45 +1,43 @@
 #!/usr/bin/env python3
 
 import sys
-from setuptools import setup, find_packages
 
-if sys.version_info < (3, 6):
-    raise ValueError("Requires Python 3.6+")
+from setuptools import find_packages, setup
+
+if sys.version_info < (3, 8):
+    raise ValueError("Requires Python 3.8+")
+
 
 def requires_from_file(filename: str) -> list:
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         return [x.strip() for x in f if x.strip()]
 
-with open("README.rst", "r") as f:
+
+with open("README.md", "r", encoding="utf-8") as f:
     readme = f.read()
 
 setup(
     name="molot",
-    use_scm_version=True,
-    description="Molot - lightweight build tool for software projects.",
+    description="Simple execution orchestrator.",
     long_description=readme,
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/markdown",
     author="Mike Gouline",
-    author_email="hello@gouline.net",
     url="https://github.com/gouline/molot",
     license="MIT License",
     packages=find_packages(exclude=["tests"]),
     install_requires=requires_from_file("requirements.txt"),
-    extras_require={
-        "test":requires_from_file("requirements-test.txt")
-    },
+    extras_require={"test": requires_from_file("requirements-test.txt")},
     setup_requires=["setuptools_scm"],
     classifiers=[
-        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],

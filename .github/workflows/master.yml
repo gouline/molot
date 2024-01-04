@@ -10,9 +10,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8.18"
 
       - name: Requirements
         run: make requirements
@@ -20,15 +24,20 @@ jobs:
       - name: Build
         run: make build
 
-      # TODO: enable when issues fixed
-      # - name: Lint check
-      #   run: make lint
+      - name: Formatting check (black)
+        run: make check-fmt
 
-      # - name: Type check
-      #   run: make type
+      - name: Imports ordering check (isort)
+        run: make check-imports
 
-      # - name: Test
-      #   run: make test
+      - name: Lint Python check (pylint)
+        run: make check-lint-python
+
+      - name: Type check (mypy)
+        run: make check-type
+
+      - name: Test
+        run: make test
 
       - name: Publish a Python distribution to PyPI
         if: github.event_name == 'release'
