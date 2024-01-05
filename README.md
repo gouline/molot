@@ -140,4 +140,4 @@ If both are passed simultaneously, then argument takes precedence over the envir
 
 ## Examples
 
-See [example](./example) for a basic orchestration that showcases most features.
+See [examples](./examples) for use cases that demonstrate the main features.
