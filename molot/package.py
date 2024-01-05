@@ -3,21 +3,6 @@ import logging
 import sys
 
 
-class ReturnCodeError(Exception):
-    """Error for failed shell commands in piped mode."""
-
-    def __init__(self, code: int, output: str):
-        """Constructor.
-
-        Arguments:
-            code {int} -- Return code from shell.
-            output {str} -- Text output of error.
-        """
-
-        self.code = code
-        self.output = output
-
-
 class ShutdownHandler(logging.Handler):
     """Logging handler that shuts down application at certain level."""
 
@@ -26,14 +11,18 @@ class ShutdownHandler(logging.Handler):
         sys.exit(1)
 
 
-def logging_levels(show: int, shutdown: int = logging.NOTSET):
+def setup_logging(level: int, shutdown: int = logging.NOTSET, **kwargs):
     """Set logging levels.
 
     Args:
-        show (int): Minimum level to print in output.
+        level (int): Minimum level to print in output.
         shutdown (int, optional): Level to shut down application. Defaults to logging.NOTSET.
     """
-    logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=show)
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        level=level,
+        **kwargs,
+    )
     if shutdown != logging.NOTSET:
         logging.getLogger().addHandler(ShutdownHandler(level=shutdown))
 
@@ -48,4 +37,7 @@ def get_version() -> str:
         return importlib.metadata.version("molot")
     except importlib.metadata.PackageNotFoundError:
         logging.warning("No version found in metadata")
-        return "0.0.0-UNKONWN"
+        return "0.0.0"
+
+
+version = get_version()

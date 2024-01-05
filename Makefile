@@ -54,7 +54,10 @@ dist-upload: check
 	twine upload dist/*
 .PHONY: dist-upload
 
-dev-install: build
-	python3 -m pip uninstall -y molot \
-		&& python3 -m pip install dist/molot-*-py3-none-any.whl
+dev-uninstall:
+	python3 -m pip uninstall -y molot
+.PHONY: dev-uninstall
+
+dev-install: build dev-uninstall
+	python3 -m pip install dist/molot-*-py3-none-any.whl
 .PHONY: dev-install
