@@ -1,35 +1,63 @@
 build: clean
-	python3 setup.py sdist bdist_wheel
+	python3 -m build
+.PHONY: build
 
 clean:
 	rm -rf build dist
+.PHONY: clean
 
 requirements:
-	pip3 install -r requirements.txt 
-	pip3 install -r requirements-test.txt
+	python3 -m pip install \
+		-r requirements.txt \
+		-r requirements-test.txt
 .PHONY: requirements
 
-lint:
+fix-fmt:
+	black .
+.PHONY: fix-fmt
+
+fix-imports:
+	isort .
+.PHONY: fix-imports
+
+fix: fix-fmt fix-imports
+.PHONY: fix
+
+check-fmt:
+	black --check .
+.PHONY: check-fmt
+
+check-imports:
+	isort --check .
+.PHONY: check-imports
+
+check-lint-python:
 	pylint molot
-.PHONY: lint
+.PHONY: check-lint-python
 
-type:
+check-type:
 	mypy molot
-.PHONY: type
+.PHONY: check-type
 
-# TODO: implement tests
-# test:
-# 	python3 -m unittest tests
-# .PHONY: test
-
-check: build
-	twine check dist/*
+check: check-fmt check-imports check-lint-python check-type
 .PHONY: check
 
-upload: check
-	twine upload dist/*
-.PHONY: upload
+test:
+	python3 -m unittest tests
+.PHONY: test
 
-dev-install: build
-	pip3 uninstall -y molot && pip3 install dist/molot-*-py3-none-any.whl
+dist-check: build
+	twine check dist/*
+.PHONY: dist-check
+
+dist-upload: check
+	twine upload dist/*
+.PHONY: dist-upload
+
+dev-uninstall:
+	python3 -m pip uninstall -y molot
+.PHONY: dev-uninstall
+
+dev-install: build dev-uninstall
+	python3 -m pip install dist/molot-*-py3-none-any.whl
 .PHONY: dev-install

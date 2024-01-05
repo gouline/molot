@@ -1,21 +1,22 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
+requires = ["setuptools>=60", "setuptools-scm"]
 
 [tool.setuptools_scm]
-write_to = "molot/_version.py"
 
 [tool.black]
-line-length = 100
-target-version = ['py36', 'py37', 'py38', 'py39']
 include = '\.pyi?$'
+line-length = 88
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+src_paths = ["molot", "examples", "tests", "setup.py"]
 
 [tool.mypy]
+check_untyped_defs = true
+ignore_missing_imports = true
 python_version = "3.8"
 
-[[tool.mypy.overrides]]
-module = ["molot"]
-ignore_missing_imports = true
-
 [tool.pylint.master]
-disable = ["R", "C"]
+disable = ["R", "C", "W0511"]

@@ -1,6 +1,11 @@
 # Examples
 
-Example projects showing how to write build scripts.
+Simple use cases that demonstrate the main features.
 
-* [basic](./basic) - Basic project showing basic targets and environment arguments.
-* [contexts](./contexts) - Project that uses contexts project.
+## [Docker Entry Point](./entrypoint)
+
+Molot is useful for creating entry points in your Docker images.
+
+## [Build Packager](./packager)
+
+You can use Molot for orchestrating simple build tasks in your project.
