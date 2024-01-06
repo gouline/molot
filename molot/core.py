@@ -1,28 +1,23 @@
 import argparse
-import collections
 import io
-import logging
-import os
 import sys
-from enum import Enum
+from functools import reduce
 from pathlib import Path
-from typing import Callable, Deque, Dict, List, Optional
+from typing import Callable, List, Optional, Union
 
 from dotenv import load_dotenv
 
-from .models import EnvArg, State, Target
 from .package import version
+from .state import (
+    EnvArg,
+    State,
+    Target,
+    TargetCircularDependencyError,
+    TargetNotFoundError,
+)
 
 _args = sys.argv[1:]
 _state = State()
-
-
-class ResultCode(Enum):
-    """ResultCode codes turned by evaluation."""
-
-    SUCCESS = 0
-    TARGET_NOT_FOUND = 2
-    CIRCULAR_DEPENDENCY = 3
 
 
 def _list_targets_str() -> str:
@@ -34,24 +29,20 @@ def _list_targets_str() -> str:
 
     out = io.StringIO()
 
-    targets = list(_state.targets.values())
-    if len(targets) > 0:
+    targets = _state.targets_by_group()
+    if targets:
         print("available targets:", file=out)
-        targets.sort(key=lambda x: (x.group.lower(), x.name.lower()))
-        targets_group = None
-        for t in targets:
-            depends = f"(depends: {', '.join(t.depends)})" if t.depends else ""
-            if targets_group != t.group:
-                targets_group = t.group
-                print(f"  {t.group}", file=out)
-            print(f"    {t.name} - {t.description} {depends}", file=out)
+        for group, grouped in targets.items():
+            print(f"  {group}", file=out)
+            for t in grouped:
+                depends = f"(depends: {', '.join(t.depends)})" if t.depends else ""
+                print(f"    {t.name} - {t.description} {depends}", file=out)
 
-    if len(_state.envargs) > 0:
+    if _state.envargs:
         print("\nenvironment arguments:", file=out)
-        for aname in _state.envargs:
-            arg = _state.envargs[aname]
+        for name, arg in _state.envargs.items():
             print(
-                f"  {arg.name} - {arg.description} (default: {arg.default})",
+                f"  {name} - {arg.description} (default: {arg.default})",
                 file=out,
             )
 
@@ -103,34 +94,6 @@ def _argument_parser(preparse: bool = False) -> argparse.ArgumentParser:
     return parser
 
 
-def _envargval(name: str, default: str) -> str:
-    """Fetches value for an environment argument from any possible source.
-
-    Args:
-        name (str): Unique name.
-        default (str): Default value when not set.
-
-    Returns:
-        str: Retrieved value or default.
-    """
-
-    # P1: override passed via --arg
-    if name in _state.envarg_vals_override:
-        return _state.envarg_vals_override[name]
-
-    # P2: environment variable
-    val = os.getenv(name)
-    if val is not None:
-        return val
-
-    # P3: properties file passed via envargs_file()
-    if name in _state.envarg_vals_base:
-        return _state.envarg_vals_base[name]
-
-    # P4: provided default
-    return default
-
-
 def envarg(
     name: str,
     default: str = "",
@@ -154,7 +117,7 @@ def envarg(
         default=default,
         sensitive=sensitive,
     )
-    return _envargval(name, default)
+    return _state.envarg_val(name)
 
 
 def envarg_bool(
@@ -197,7 +160,7 @@ def envarg_int(
     return int(v)
 
 
-def envargs_file(path: str, sep="=", comment_prefix="#"):
+def envargs_file(path: Union[str, Path], sep="=", comment_prefix="#"):
     """Reads environment arguments from file and save them as defaults.
 
     This expects a simple properties file of form:
@@ -207,7 +170,7 @@ def envargs_file(path: str, sep="=", comment_prefix="#"):
         KEY3 = "VALUE3"
 
     Args:
-        path (str): Path to configuration file.
+        path (Union[str, Path]): Path to configuration file.
         sep (str, optional): Key-value separator. Defaults to "=".
         comment_prefix (str, optional): Line prefix to consider a comment. Defaults to "#".
     """
@@ -221,12 +184,11 @@ def envargs_file(path: str, sep="=", comment_prefix="#"):
         for line in f:
             l = line.strip()
             if l and not l.startswith(comment_prefix):
-                key_value = l.split(sep)
-                key = key_value[0].strip()
-                value = sep.join(key_value[1:]).strip().strip('"')
-
-                if key not in _state.envarg_vals_base:
-                    _state.envarg_vals_base[key] = value
+                key_value = l.split(sep, 1)
+                if len(key_value) == 2:
+                    key = key_value[0].strip()
+                    value = key_value[1].strip().strip('"')
+                    _state.file_vals[key] = value
 
 
 def target(
@@ -280,9 +242,9 @@ def reset():
 
     if args.arg:
         for a in args.arg:
-            aparts = a.split("=", 1)
-            if len(aparts) >= 2:
-                _state.envarg_vals_override[aparts[0]] = aparts[1]
+            key_value = a.split("=", 1)
+            if len(key_value) == 2:
+                _state.arg_vals[key_value[0]] = key_value[1]
 
     target(
         name="list",
@@ -292,81 +254,40 @@ def reset():
     )(_list_targets)
 
 
-def evaluate(exit_on_error: bool = True) -> ResultCode:
+def evaluate():
     """Evaluates targets and environment arguments.
 
     Call to evaluate() must be at the very end of your script!
-
-    Args:
-        exit_on_error (bool, optional): Exit application on error. Defaults to True.
-
-    Returns:
-        ResultCode: ResultCode code, unless exited on error.
     """
-
-    code = ResultCode.SUCCESS
 
     print(f"→ Running Molot {version}...")
 
     args = _argument_parser().parse_args(args=_args)
 
-    to_evaluate: Deque[str] = collections.deque()
-    to_evaluate.extendleft(args.targets)
-    evaluated: Dict[str, bool] = {}
-    to_execute: Deque[Target] = collections.deque()
-    while len(to_evaluate) > 0:
-        name = to_evaluate[-1]
-        if name not in _state.targets:
-            print("Target not found:", name, "\n")
-            _list_targets()
-            code = ResultCode.TARGET_NOT_FOUND
-            break
+    try:
+        to_execute = _state.targets_to_execute(args.targets)
 
-        t = _state.targets[name]
-        logging.debug("Evaluating target %s", name)
+        non_phony = reduce(lambda acc, t: acc or not t.phony, to_execute, False)
+        if non_phony:
+            print("environment:")
+            for argname in _state.envargs:
+                value = _state.envarg_val(argname, masked=True)
+                print(f"  {argname}={value}")
+            print()
 
-        deps_satisfied = True
-        for dname in reversed(t.depends):
-            if dname not in evaluated or not evaluated[dname]:
-                to_evaluate.append(dname)
-                deps_satisfied = False
-
-        if not deps_satisfied:
-            if name in evaluated:
-                print(f"Circular dependency detected when evaluating target {name}")
-                code = ResultCode.CIRCULAR_DEPENDENCY
-                break
-
-            evaluated[name] = False
-            continue
-
-        if name not in evaluated or not evaluated[name]:
-            to_execute.appendleft(t)
-
-        evaluated[name] = True
-        to_evaluate.pop()
-
-    if code == ResultCode.SUCCESS:
-        env_listed = False
-        while len(to_execute) > 0:
+        while to_execute:
             t = to_execute.pop()
-
-            if not env_listed and not t.phony:
-                print("environment:")
-                for key, var in _state.envargs.items():
-                    value = _envargval(key, var.default)
-                    if value and var.sensitive:
-                        value = "**********"
-                    print(f"  {key}={value}")
-                print()
-                env_listed = True
-
             print("→ Executing target:", t.name)
             t.func()
+    except TargetNotFoundError as e:
+        print("Target not found:", e.name, "\n")
+        _list_targets()
+        sys.exit(1)
+    except TargetCircularDependencyError as e:
+        print(f"Circular dependency detected when evaluating target {e.name}")
+        sys.exit(2)
 
-    if exit_on_error and code != ResultCode.SUCCESS:
-        sys.exit(code.value)
-    return code
+    sys.exit(0)
 
 
 reset()

@@ -2,7 +2,9 @@
 from molot import *  # pylint: disable=wildcard-import,unused-wildcard-import
 
 CREATE_DIST = envarg_bool(
-    "CREATE_DIST", description="create dist/ directory if it doesn't exist"
+    "CREATE_DIST",
+    description="create dist/ directory if it doesn't exist",
+    default=True,
 )
 
 
