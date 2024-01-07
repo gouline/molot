@@ -7,7 +7,7 @@ from typing import Callable, List, Optional, Union
 
 from dotenv import load_dotenv
 
-from .package import version
+from .package import get_version
 from .state import (
     EnvArg,
     State,
@@ -260,7 +260,7 @@ def evaluate():
     Call to evaluate() must be at the very end of your script!
     """
 
-    print(f"→ Running Molot {version}...")
+    print(f"→ Running Molot {get_version()}...")
 
     args = _argument_parser().parse_args(args=_args)
 

@@ -1,4 +1,3 @@
-import importlib.metadata
 import logging
 import sys
 
@@ -28,16 +27,15 @@ def setup_logging(level: int, shutdown: int = logging.NOTSET, **kwargs):
 
 
 def get_version() -> str:
-    """Retrieve version from package metadata.
+    """Retrieve version from _version.py file.
 
     Returns:
-        str: Package version or "0.0.0-UNKNOWN" when unavailable.
+        str: Package version or "0.0.0" when file missing.
     """
     try:
-        return importlib.metadata.version("molot")
-    except importlib.metadata.PackageNotFoundError:
-        logging.warning("No version found in metadata")
+        from ._version import __version__  # type: ignore
+
+        return __version__
+    except ModuleNotFoundError:
+        logging.warning("No _version.py file")
         return "0.0.0"
-
-
-version = get_version()
