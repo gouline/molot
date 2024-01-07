@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Optional
 
 import molot.core
-from molot import envarg, envarg_bool, envarg_int, envargs_file, evaluate, reset, target
-from molot.state import TargetCircularDependencyError, TargetNotFoundError
+from molot import envarg, envarg_bool, envarg_int, envargs_file, evaluate, target
+from molot.errors import TargetCircularDependencyError, TargetNotFoundError
 
 
 class MockSys:
@@ -27,7 +27,7 @@ class TestCore(unittest.TestCase):
     def setUp(self):
         molot.core._sys = _sys
         self.assertIn("list", molot.core._state.targets)
-        reset()
+        molot.core._init()
         self.assertIn("list", molot.core._state.targets)
 
     def test_empty(self):
@@ -102,7 +102,7 @@ class TestCore(unittest.TestCase):
         molot.core._args = ["--arg", "KEY2=Value222"]
         os.environ["KEY2"] = "Value22"
         os.environ["KEY6"] = "Value66"
-        reset()
+        molot.core._init()
         envargs_file(Path("tests") / "fixtures" / "envargs.env")
         self.assertEqual("Value1", envarg("KEY1"))
         self.assertEqual("Value222", envarg("KEY2"))
