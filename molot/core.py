@@ -16,7 +16,8 @@ from .state import (
     TargetNotFoundError,
 )
 
-_args = sys.argv[1:]
+_sys = sys
+_args = _sys.argv[1:]
 _state = State()
 
 
@@ -282,12 +283,12 @@ def evaluate():
     except TargetNotFoundError as e:
         print("Target not found:", e.name, "\n")
         _list_targets()
-        sys.exit(1)
+        _sys.exit(1)
     except TargetCircularDependencyError as e:
         print(f"Circular dependency detected when evaluating target {e.name}")
-        sys.exit(2)
+        _sys.exit(2)
 
-    sys.exit(0)
+    _sys.exit(0)
 
 
 reset()
