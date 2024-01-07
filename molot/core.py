@@ -7,14 +7,9 @@ from typing import Callable, List, Optional, Union
 
 from dotenv import load_dotenv
 
-from .package import get_version
-from .state import (
-    EnvArg,
-    State,
-    Target,
-    TargetCircularDependencyError,
-    TargetNotFoundError,
-)
+from ._package import get_version
+from ._state import EnvArg, State, Target
+from .errors import TargetCircularDependencyError, TargetNotFoundError
 
 _sys = sys
 _args = _sys.argv[1:]
@@ -230,31 +225,6 @@ def target(
     return decorator
 
 
-def reset():
-    """Resets internal state, allowing for re-definition of targets and arguments."""
-
-    _state.clear()
-
-    args, _ = _argument_parser(preparse=True).parse_known_args(args=_args)
-
-    if args.dotenv:
-        for dotenv_path in args.dotenv:
-            load_dotenv(dotenv_path=dotenv_path)
-
-    if args.arg:
-        for a in args.arg:
-            key_value = a.split("=", 1)
-            if len(key_value) == 2:
-                _state.arg_vals[key_value[0]] = key_value[1]
-
-    target(
-        name="list",
-        description="lists all available targets",
-        group="<builtin>",
-        _phony=True,
-    )(_list_targets)
-
-
 def evaluate():
     """Evaluates targets and environment arguments.
 
@@ -291,4 +261,29 @@ def evaluate():
     _sys.exit(0)
 
 
-reset()
+def _init():
+    """Initializes internal state for defining targets and arguments."""
+
+    _state.clear()
+
+    args, _ = _argument_parser(preparse=True).parse_known_args(args=_args)
+
+    if args.dotenv:
+        for dotenv_path in args.dotenv:
+            load_dotenv(dotenv_path=dotenv_path)
+
+    if args.arg:
+        for a in args.arg:
+            key_value = a.split("=", 1)
+            if len(key_value) == 2:
+                _state.arg_vals[key_value[0]] = key_value[1]
+
+    target(
+        name="list",
+        description="lists all available targets",
+        group="<builtin>",
+        _phony=True,
+    )(_list_targets)
+
+
+_init()

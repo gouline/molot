@@ -4,20 +4,7 @@ import os
 from dataclasses import dataclass
 from typing import Callable, Deque, Dict, Iterable, List, Mapping, MutableSequence
 
-
-class TargetError(Exception):
-    """Error relating to a target."""
-
-    def __init__(self, name: str):
-        self.name = name
-
-
-class TargetNotFoundError(TargetError):
-    """Requested target not found."""
-
-
-class TargetCircularDependencyError(TargetError):
-    """Circular dependency detected while evaluating target."""
+from .errors import TargetCircularDependencyError, TargetNotFoundError
 
 
 @dataclass
