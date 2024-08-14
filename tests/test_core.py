@@ -52,7 +52,7 @@ def test_happy():
 
     assert envarg("ARG_STR", default="") == ""
     assert envarg_int("ARG_INT", default=42) == 42
-    assert envarg_bool("ARG_BOOL", default=True) == True
+    assert envarg_bool("ARG_BOOL", default=True)
 
     assert "ARG_STR" in molot.core._state.envargs
     assert "ARG_INT" in molot.core._state.envargs
@@ -90,14 +90,14 @@ def test_envarg_file():
     envargs_file(Path("tests") / "fixtures" / "envargs.env")
     assert envarg("KEY1") == "Value1"
     assert envarg("KEY2") == "Value2"
-    assert envarg_bool("KEY3") == True
+    assert envarg_bool("KEY3")
     assert envarg_int("KEY4") == 4
     assert envarg("KEY5") == ""
     assert envarg("KEY6") == "Value6"
     assert envarg("KEY7") == "Value7"
     assert envarg("KEY8") == "Value8"
     assert envarg("KEY9") == "Value9"
-    assert envarg_bool("KEY9") == False
+    assert not envarg_bool("KEY9")
     with pytest.raises(ValueError):
         envarg_int("KEY9")
     assert envarg("KEY10") == ""
