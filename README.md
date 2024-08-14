@@ -4,7 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/molot)](https://pypi.org/project/molot/)
 [![Downloads](https://pepy.tech/badge/molot)](https://pepy.tech/project/molot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/gouline/molot/blob/master/LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 Simple execution orchestrator.
 
