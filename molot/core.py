@@ -178,9 +178,9 @@ def envargs_file(path: Union[str, Path], sep="=", comment_prefix="#"):
     # https://stackoverflow.com/a/31852401/818393
     with open(path, "rt", encoding="utf-8") as f:
         for line in f:
-            l = line.strip()
-            if l and not l.startswith(comment_prefix):
-                key_value = l.split(sep, 1)
+            ln = line.strip()
+            if ln and not ln.startswith(comment_prefix):
+                key_value = ln.split(sep, 1)
                 if len(key_value) == 2:
                     key = key_value[0].strip()
                     value = key_value[1].strip().strip('"')
