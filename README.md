@@ -2,15 +2,17 @@
 
 [![GitHub Actions](https://github.com/gouline/molot/actions/workflows/master.yml/badge.svg)](https://github.com/gouline/molot/actions/workflows/master.yml)
 [![PyPI](https://img.shields.io/pypi/v/molot)](https://pypi.org/project/molot/)
-[![Downloads](https://pepy.tech/badge/molot)](https://pepy.tech/project/molot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/gouline/molot/blob/master/LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 Simple execution orchestrator.
 
 ## Requirements
 
 Molot requires Python 3.8 or above.
+
+For development, you will need [uv](https://docs.astral.sh/uv/getting-started/installation/) installed.
 
 ## Usage
 
