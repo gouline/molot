@@ -1,36 +1,34 @@
 build: clean
-	python3 -m build
+	uv run python3 -m build
 .PHONY: build
 
 clean:
 	rm -rf build dist
 .PHONY: clean
 
-requirements:
-	python3 -m pip install \
-		-r requirements.txt \
-		-r requirements-test.txt
-.PHONY: requirements
+dependencies:
+	uv sync --frozen --no-install-project
+.PHONY: dependencies
 
 fix:
-	ruff format .
-	ruff check --fix .
+	uv run ruff format .
+	uv run ruff check --fix .
 .PHONY: fix
 
 check-lint:
-	ruff format --check .
-	ruff check .
+	uv run ruff format --check .
+	uv run ruff check .
 .PHONY: check-lint
 
 check-type:
-	mypy molot
+	uv run mypy molot
 .PHONY: check-type
 
 check: check-lint check-type
 .PHONY: check
 
 test:
-	pytest tests
+	uv run pytest tests
 .PHONY: test
 
 pre: fix check test
@@ -45,9 +43,9 @@ dist-upload: check
 .PHONY: dist-upload
 
 dev-uninstall:
-	python3 -m pip uninstall -y molot
+	uv run python3 -m pip uninstall -y molot
 .PHONY: dev-uninstall
 
 dev-install: build dev-uninstall
-	python3 -m pip install dist/molot-*-py3-none-any.whl
+	uv pip install dist/molot-*-py3-none-any.whl
 .PHONY: dev-install
