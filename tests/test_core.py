@@ -1,4 +1,3 @@
-# pylint: disable=protected-access
 import logging
 import os
 from pathlib import Path
