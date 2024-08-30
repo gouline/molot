@@ -20,14 +20,12 @@ Create a new orchestration file, e.g. `build.py` for a build orchestration. Make
 
 ```py
 #!/usr/bin/env python3
-from molot import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from molot import *
 
 # Your targets and environment arguments here
 
 evaluate()
 ```
-
-Pylint comment silences editor warnings about wildcard imports, you can alternatively import everything individually.
 
 Now you're ready to run the build script to see the help message:
 

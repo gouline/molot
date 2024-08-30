@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from molot import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from molot import *
 
 CREATE_DIST = envarg_bool(
     "CREATE_DIST",
